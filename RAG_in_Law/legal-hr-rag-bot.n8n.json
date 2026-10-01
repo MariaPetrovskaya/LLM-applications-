@@ -1,0 +1,914 @@
+{
+  "name": "Legal HR RAG Bot (n8n) — Portfolio Sample",
+  "nodes": [
+    {
+      "parameters": {
+        "name": "company_documents_tool",
+        "description": "Retrieve information from any company documents",
+        "topK": "=4"
+      },
+      "id": "3d8c46b5-3f2b-4f0e-a937-0abe9d51b1b9",
+      "name": "Vector Store Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "position": [
+        336,
+        128
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram\"].json.message.chat.id }}",
+        "text": "=\n{{ $json.output }}\n{{ $json.telegram_message }}\n\n",
+        "replyMarkup": "=",
+        "forceReply": {},
+        "replyKeyboardOptions": {},
+        "replyKeyboardRemove": {},
+        "additionalFields": {
+          "message_thread_id": null
+        }
+      },
+      "name": "Send to Telegram3",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        704,
+        -128
+      ],
+      "id": "66fffafc-aea3-4137-8bb4-08a0d64a9b40",
+      "webhookId": "YOUR_WEBHOOK_ID_1",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "Telegram Bot Account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "\n# Knowledge Store Agent System Prompt\n\n \n\nYou are a data analysis agent that retrieves and analyzes information \nfrom a vector store to answer user questions.\n\n \n\n## Your Task\n1. **Search the vector store** - Use similarity search to find relevant \n   documents and data\n2. **Analyze the results** - Understand what the retrieved data tells you\n3. **Provide clear answers** - Give helpful responses based on the data \n   you found\n\n \n\n## How to Work with Vector Data\n\n \n\n### Search Process\n- Use the user's question to search for similar content\n- Retrieve multiple relevant chunks of data\n- Look for patterns and connections across the results\n- Consider both exact matches and conceptually similar information\n\n \n\n### Analysis Guidelines\n- Read through all retrieved documents carefully\n- Identify key information that answers the user's question\n- Note any conflicting or incomplete information\n- Look for trends, patterns, or insights in the data\n\n \n\n### Response Format\n- Start with a direct answer to the user's question\n- Support your answer with specific information from the data\n- Cite which documents or sources your information comes from\n- Be clear about what you found and what you didn't find\n\n \n\n## Response Guidelines\n\n \n\n### When You Find Good Data\n- Give a confident, detailed answer\n- Include relevant quotes or data points\n- Explain how the information relates to their question\n- Offer additional insights if available\n\n \n\n### When Data is Limited\n- Be honest about what information is available\n- Share what you did find, even if partial\n- Don't make up information not in the data\n\n \n\n### ⚠️ When No Relevant Data is Found — STRICT RULE\nIf the vector store returns no relevant documents, or the retrieved \ndocuments do not contain information related to the user's question, \nyou MUST reply with EXACTLY this phrase and nothing else:\n\n \n\n\"в предоставленных документах нет информации\"\n\n \n\nDo NOT add explanations, suggestions, or any other text.\nDo NOT attempt to answer from your own knowledge.\nDo NOT suggest rephrasing or alternative questions.\nJust return that exact phrase — no more, no less.\n\n \n\n## Key Principles\n- Always base answers solely on the retrieved data\n- Be transparent about your sources\n- Admit when information is unclear or missing\n- Never use your general knowledge to fill gaps in the data\n- Ask clarifying questions if the user's request is vague\n\n \n\n## Language\nAlways answer in Russian.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        -80
+      ],
+      "id": "e61a2975-ff17-474d-8cc6-eb2aeaabab83",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dec12a18-6d75-468c-91bb-617ea4734398",
+              "name": "message.text",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "4e2da86d-b700-434a-91ec-5f1bcc11cc99",
+              "name": "sessionId",
+              "value": "={{ $json.message.chat.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        -80
+      ],
+      "id": "c94ab4b9-e5c6-4703-bb0c-73dd03a9239c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        112
+      ],
+      "id": "3e2a5cdc-4d4e-4456-9a02-16541dba2335",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "YOUR_OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        544,
+        288
+      ],
+      "id": "dcca44ad-b39a-466f-8f8a-25144bc9340a",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "YOUR_OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 512
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        48,
+        368
+      ],
+      "id": "ed6f3bef-96c6-4a11-8151-5f16082c0036",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "YOUR_OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "legis",
+          "mode": "list",
+          "cachedResultName": "legis"
+        },
+        "options": {
+          "pineconeNamespace": "faq"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        160,
+        256
+      ],
+      "id": "543f98ba-54ff-46f7-b417-3b2ca9a03929",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "YOUR_PINECONE_CREDENTIAL_ID",
+          "name": "Pinecone Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "load",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "legis",
+          "mode": "list",
+          "cachedResultName": "legis"
+        },
+        "prompt": "={{ $json.search_query }}",
+        "options": {
+          "pineconeNamespace": "new2"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        160,
+        480
+      ],
+      "id": "f79b4dd7-96a0-4b87-833b-b2be728dc46f",
+      "name": "Pinecone Vector Store1",
+      "credentials": {
+        "pineconeApi": {
+          "id": "YOUR_PINECONE_CREDENTIAL_ID",
+          "name": "Pinecone Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 512
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        160,
+        640
+      ],
+      "id": "723d19ef-850b-4ec2-bb45-84b5b6ece1c7",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "YOUR_OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Нормализация запроса\nconst userQuery = $('Edit Fields').item.json.message.text || '';\n\nlet normalizedQuery = userQuery\n  .toLowerCase()\n  .replace(/[^\\w\\u0400-\\u04FF\\s]/g, ' ')\n  .replace(/\\s+/g, ' ')\n  .trim();\n\nconst hrKeywords = ['правила', 'документы', 'персонал', 'инструкция', 'памятка', 'сотрудники'];\nconst hasHRTerms = hrKeywords.some(keyword => normalizedQuery.includes(keyword));\n\nif (!hasHRTerms && normalizedQuery) {\n  normalizedQuery += ' интересуют правила инструкции сотрудники';\n}\n\nconsole.log('Original query:', userQuery);\nconsole.log('Normalized query:', normalizedQuery);\n\nreturn [{\n  json: {\n    ...$input.all()[0].json,\n    search_query: normalizedQuery\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        480
+      ],
+      "id": "47d05ec1-9695-4437-9bc9-6321e6807523",
+      "name": "Normalize Query"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram\"].json.message.chat.id }}",
+        "text": "=<blockquote expandable=\"expandable\">{{ $json.telegram_message }}</blockquote>",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "name": "Send to Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        976,
+        480
+      ],
+      "id": "5a127170-3059-40c0-a3cf-84d4c85044f2",
+      "webhookId": "YOUR_WEBHOOK_ID_3",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "Telegram Bot Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "users",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "time": "={{ $now }}",
+            "id": "={{ $json.message.chat.id }}",
+            "name": "={{ $json.message.chat.first_name }}",
+            "tg_nic_name": "={{ $json.message.from.username }}",
+            "text": "={{ $json.message.text }}"
+          },
+          "matchingColumns": [
+            "time"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tg_nic_name",
+              "displayName": "tg_nic_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "time",
+              "displayName": "time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        0,
+        -352
+      ],
+      "id": "c7c03829-1c8a-49d1-a539-054f091fd8db",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Google Sheets Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -416,
+        160
+      ],
+      "id": "f4706019-40de-40e8-bd1e-9495b57395ff",
+      "name": "Telegram",
+      "webhookId": "YOUR_WEBHOOK_ID_2",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "Telegram Bot Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Обработка результатов из Pinecone\nconst items = $input.all();\n\nconsole.log('=== DEBUG PINE CONE RESULTS ===');\nconsole.log('Total items:', items.length);\n\nif (items.length === 0) {\n  return [{ \n    json: { \n      telegram_message: '❌ Ссылки на документы ❌\\n\\nПо вашему запросу ничего не найдено.',\n      telegram_parse_mode: 'HTML'\n    } \n  }];\n}\n\nlet message = '<b>🔍 Ссылки на документы</b>\\n\\n';\nmessage += `Найдено результатов: <b>${items.length}</b>\\n\\n`;\n\nitems.forEach((item, index) => {\n  const document = item.json?.document || {};\n  const metadata = document.metadata || {};\n  const pageContent = document.pageContent || '';\n  \n  const cleanText = (text) => {\n    if (!text) return '';\n    return text\n      .replace(/&/g, '&amp;')\n      .replace(/</g, '&lt;')\n      .replace(/>/g, '&gt;')\n      .replace(/\"/g, '&quot;')\n      .replace(/'/g, '&#039;');\n  };\n  \n  let title = '';\n  if (metadata.meaning) {\n    title = cleanText(metadata.meaning);\n  } else if (metadata.filename) {\n    title = cleanText(metadata.filename);\n  } else {\n    title = `Документ ${index + 1}`;\n  }\n  \n  // Создаем уникальный идентификатор для ссылки\n  const resultId = `result_${index}`;\n  \n  message += `<b>${index + 1}. ${title}</b>\\n`;\n  \n  // Если есть ссылка на оригинальный документ\n  if (metadata.link) {\n    const cleanLink = metadata.link.replace(/[<>]/g, '');\n    message += `<a href=\"${cleanLink}\">📎 Открыть документ</a>\\n\\n`;\n  } else {\n    // Краткое описание\n    if (pageContent) {\n      const preview = cleanText(pageContent).substring(0, 150);\n      message += `${preview}${pageContent.length > 150 ? '...' : ''}\\n\\n`;\n    } else {\n      message += '<i>Нет доступного содержимого</i>\\n\\n';\n    }\n  }\n});\n\nif (message.length > 4096) {\n  message = message.substring(0, 4000) + '\\n\\n... <i>(сообщение сокращено)</i>';\n}\n\nreturn [{ \n  json: { \n    telegram_message: message,\n    telegram_parse_mode: 'HTML'\n  } \n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        480
+      ],
+      "id": "ae477a67-ad9c-40af-a87e-c0faded604c0",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b7f859ab-18db-4f23-80b6-8f575efdec75",
+              "leftValue": "={{ $json.hasResults }}",
+              "rightValue": "предоставленных документах нет информации",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        752,
+        16
+      ],
+      "id": "2ce3685a-b3d7-44d7-a237-da8794907260",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram\"].json.message.chat.id }}",
+        "text": "=\nобратимся к справочно-правовой информации \n\n",
+        "replyMarkup": "=",
+        "forceReply": {},
+        "replyKeyboardOptions": {},
+        "replyKeyboardRemove": {},
+        "additionalFields": {
+          "message_thread_id": null
+        }
+      },
+      "name": "Send to Telegram4",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -80
+      ],
+      "id": "0926d951-9b82-42e2-83ed-22c8ab15a83a",
+      "webhookId": "YOUR_WEBHOOK_ID_1",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "Telegram Bot Account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst result = items[0].json;\n\n// The AI Agent returns its answer in \"output\", not \"response\"\nconst agentOutput = (result.output || '').trim();\n\n// Phrases the agent uses when it finds nothing\nconst noResultPhrases = [\n  'не найден',\n  'не нашел',\n  'не нашёл', \n  'нет информации',\n  'нет данных',\n  'не содержит',\n  'не могу найти',\n  'отсутствует',\n  'не располагаю',\n  'не удалось найти',\n];\n\nconst lowerOutput = agentOutput.toLowerCase();\nconst foundNoResult = noResultPhrases.some(phrase => lowerOutput.includes(phrase));\n\nconst hasResults = agentOutput.length > 30 && !foundNoResult;\n\nreturn [{\n  json: {\n    ...result,\n    hasResults,\n    agentOutputPreview: agentOutput.slice(0, 100),\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        -16
+      ],
+      "id": "3d06563b-1ffb-4b7b-a421-4bba24814bd8",
+      "name": "Detect empty vector results"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Edit Fields').item.json.message.text }}",
+        "options": {
+          "systemMessage": "\n# Knowledge Store Agent System Prompt\n\n \n\nYou are a data analysis agent that retrieves and analyzes information \nfrom a vector store to answer user questions.\n\n \n\n## Your Task\n1. **Search the vector store** - Use similarity search to find relevant \n   documents and data\n2. **Analyze the results** - Understand what the retrieved data tells you\n3. **Provide clear answers** - Give helpful responses based on the data \n   you found\n\n \n\n## How to Work with Vector Data\n\n \n\n### Search Process\n- Use the user's question to search for similar content\n- Retrieve multiple relevant chunks of data\n- Look for patterns and connections across the results\n- Consider both exact matches and conceptually similar information\n\n \n\n### Analysis Guidelines\n- Read through all retrieved documents carefully\n- Identify key information that answers the user's question\n- Note any conflicting or incomplete information\n- Look for trends, patterns, or insights in the data\n\n \n\n### Response Format\n- Start with a direct answer to the user's question\n- Support your answer with specific information from the data\n- Cite which documents or sources your information comes from\n- Be clear about what you found and what you didn't find\n\n \n\n## Response Guidelines\n\n \n\n### When You Find Good Data\n- Give a confident, detailed answer\n- Include relevant quotes or data points\n- Explain how the information relates to their question\n- Offer additional insights if available\n\n \n\n### When Data is Limited\n- Be honest about what information is available\n- Share what you did find, even if partial\n- Don't make up information not in the data\n\n \n\n### ⚠️ When No Relevant Data is Found — STRICT RULE\nIf the vector store returns no relevant documents, or the retrieved \ndocuments do not contain information related to the user's question, \nyou MUST reply with EXACTLY this phrase and nothing else:\n\n \n\n\"в предоставленных документах нет информации\"\n\n \n\nDo NOT add explanations, suggestions, or any other text.\nDo NOT attempt to answer from your own knowledge.\nDo NOT suggest rephrasing or alternative questions.\nJust return that exact phrase — no more, no less.\n\n \n\n## Key Principles\n- Always base answers solely on the retrieved data\n- Be transparent about your sources\n- Admit when information is unclear or missing\n- Never use your general knowledge to fill gaps in the data\n- Ask clarifying questions if the user's request is vague\n\n \n\n## Language\nAlways answer in Russian.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1216,
+        64
+      ],
+      "id": "65100592-a034-440e-8df9-45e0b541f397",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "name": "company_documents_tool",
+        "description": "Retrieve information from any company documents",
+        "topK": "=4"
+      },
+      "id": "ece0ff17-8549-49f6-8917-870ded315352",
+      "name": "Vector Store Tool1",
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "position": [
+        1328,
+        272
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1216,
+        288
+      ],
+      "id": "4058342d-2c03-4b64-b5cc-25e72d8eb5e2",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "YOUR_OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 512
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1152,
+        608
+      ],
+      "id": "91535345-67d6-458d-b219-382325c084d2",
+      "name": "Embeddings OpenAI2",
+      "credentials": {
+        "openAiApi": {
+          "id": "YOUR_OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "legis",
+          "mode": "list",
+          "cachedResultName": "legis"
+        },
+        "options": {
+          "pineconeNamespace": "new2"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        1232,
+        448
+      ],
+      "id": "51ea7098-75fe-45ee-9238-a99672a34b74",
+      "name": "Pinecone Vector Store2",
+      "credentials": {
+        "pineconeApi": {
+          "id": "YOUR_PINECONE_CREDENTIAL_ID",
+          "name": "Pinecone Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1488,
+        448
+      ],
+      "id": "53b39d92-94d5-46f6-b384-1d9df75e5351",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "YOUR_OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram\"].json.message.chat.id }}",
+        "text": "=\n{{ $json.output }}\n{{ $json.telegram_message }}\n\n",
+        "replyMarkup": "=",
+        "forceReply": {},
+        "replyKeyboardOptions": {},
+        "replyKeyboardRemove": {},
+        "additionalFields": {
+          "message_thread_id": {}
+        }
+      },
+      "name": "Send to Telegram5",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        64
+      ],
+      "id": "91a5dd6a-0763-4f4b-a16d-027fbbf001f3",
+      "webhookId": "YOUR_WEBHOOK_ID_1",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "Telegram Bot Account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Vector Store Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Send to Telegram3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Detect empty vector results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Vector Store Tool",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Vector Store Tool",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Query": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send to Telegram": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send to Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send to Telegram4",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Normalize Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detect empty vector results": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Vector Store Tool1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store2",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store2": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Vector Store Tool1",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vector Store Tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send to Telegram5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "YOUR_VERSION_ID",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "YOUR_N8N_INSTANCE_ID"
+  },
+  "id": "YOUR_WORKFLOW_ID",
+  "tags": [
+    {
+      "updatedAt": "2025-10-06T11:02:27.407Z",
+      "createdAt": "2025-10-06T11:02:27.407Z",
+      "id": "YOUR_TAG_ID",
+      "name": "HR bot"
+    }
+  ]
+}
